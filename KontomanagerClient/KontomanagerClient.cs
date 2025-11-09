@@ -80,6 +80,8 @@ namespace KontomanagerClient
                 "%7B%22categories%22%3A%5B%22necessary%22%2C%22improve_offers%22%5D%7D", "/", "yesss.at"));
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.CookieContainer = _cookieContainer;
+            _httpClientHandler.UseCookies = true;
+            _httpClientHandler.AllowAutoRedirect = true;
             _httpClient = new HttpClient(_httpClientHandler);
             _httpClient.BaseAddress = baseUri;
         }

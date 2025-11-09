@@ -2,12 +2,6 @@
 .NET Client library that wraps the functionalities provided by the kontomanager.at web management interface used by a number of mobile carriers in Austria (MVNOs in the A1 network).
 Starting with version 2.1.0, the library also supports A1 accounts, which do not have a Kontomanager interface, but use a different system.
 
-#### UPDATE 02/2023
-The Kontomanager Web interface has had a major design overhaul. Unfortunately, the WebSMS functionality was removed in the process.
-v1.x is no longer working for at least XOXO and YESSS as of 15.02.2023.
-
-v2.0.0 provides basic account usage reading functionality comparable to what was present before. Reading of current monthly cost is not implemented yet.
-
 # Installation
 
 Simply install the nuget package from [https://www.nuget.org/packages/KontomanagerClient](https://www.nuget.org/packages/KontomanagerClient) to your project.
@@ -40,6 +34,10 @@ await client.CreateConnection();
 var usage = await client.GetAccountUsage();
 usage.PrintToConsole();
 ```
+
+### 2.2.0
+- update base uri for yesss
+- change target frameworks to `netstandard2.0;net8.0;net9.0`
 
 ### 2.1.0 Additions
 #### A1 Business
@@ -141,3 +139,10 @@ This is a breaking change. Some methods were removed and the constructor was ref
 
 - add support for multiple sims managed under one account
 - add support for reading basic information on the contract (available min/sms/mb, ...)
+
+
+#### UPDATE 02/2023
+The Kontomanager Web interface has had a major design overhaul. Unfortunately, the WebSMS functionality was removed in the process.
+v1.x is no longer working for at least XOXO and YESSS as of 15.02.2023.
+
+v2.0.0 provides basic account usage reading functionality comparable to what was present before. Reading of current monthly cost is not implemented yet.

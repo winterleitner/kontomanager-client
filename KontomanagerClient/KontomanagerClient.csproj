@@ -9,13 +9,13 @@
         <RepositoryUrl>https://github.com/winterleitner/kontomanager-websms-client</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <TargetFrameworks>net5.0;net6.0;net7.0;netcoreapp3.1;netstandard2.0;net8.0</TargetFrameworks>
-        <PackageVersion>2.1.4</PackageVersion>
+        <TargetFrameworks>netstandard2.0;net8.0;net9.0</TargetFrameworks>
+        <PackageVersion>2.2.0</PackageVersion>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="HtmlAgilityPack" Version="1.11.60" />
+      <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     </ItemGroup>
 
     <ItemGroup>
