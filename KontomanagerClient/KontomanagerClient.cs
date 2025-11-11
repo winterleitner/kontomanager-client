@@ -136,7 +136,8 @@ namespace KontomanagerClient
         
         private PhoneNumber ExtractPhoneNumberFromDropdown(HtmlNode liNode)
         {
-            if (liNode is null || liNode.InnerHtml.Contains("index.php?dologout=2") || (liNode.FirstChild != null && liNode.FirstChild.HasClass("dropdown-divider"))) return null;
+            if (liNode is null || liNode.InnerHtml.Contains("index.php?dologout=2") || 
+                (liNode.FirstChild != null && (liNode.FirstChild.HasClass("dropdown-divider") || liNode.FirstChild.HasClass("btn-add-num")))) return null;
             var name = liNode.SelectSingleNode(".//span").InnerText;
             
             var pattern = @"\d+\/\d*";
@@ -209,10 +210,9 @@ namespace KontomanagerClient
             //other numbers
             var an = dd.ChildNodes.FirstOrDefault(n => n.InnerText.ToLower().Contains("rufnummer wechseln"));
             if (an is null) return res;
-            while (GetNextActualSibling(an) != null)
+            foreach (var otherNumberNode in an.SelectSingleNode(".//ul").SelectNodes(".//li"))
             {
-                an = GetNextActualSibling(an);
-                res.Add(ExtractPhoneNumberFromDropdown(an));
+                res.Add(ExtractPhoneNumberFromDropdown(otherNumberNode));
             }
 
             return res.Where(n => n != null);
@@ -288,8 +288,36 @@ namespace KontomanagerClient
             var responseHtml = await response.Content.ReadAsStringAsync();
             var doc = new HtmlDocument();
             doc.LoadHtml(responseHtml);
+            await SwitchToExpertModeIfRequired();
 
             var result = new AccountUsage();
+
+            async Task SwitchToExpertModeIfRequired()
+            {
+                // Find all radio buttons with name="setmode"
+                var radios = doc.DocumentNode.SelectNodes("//input[@name='setmode']");
+
+                if (radios != null)
+                {
+                    // Find the one that is checked
+                    var selected = radios.FirstOrDefault(r => r.Attributes.Contains("checked"));
+
+                    if (selected != null)
+                    {
+                        string mode = selected.GetAttributeValue("value", "");
+                        if (mode == "simple")
+                        {
+                            // switch to expert mode
+                            response = await _httpClient.GetAsync($"{AccountUsagePath}?setmode=expert");
+                            if (!response.IsSuccessStatusCode)
+                                throw new HttpRequestException("Could not switch to expert mode");
+                            responseHtml = await response.Content.ReadAsStringAsync();
+                            doc = new HtmlDocument();
+                            doc.LoadHtml(responseHtml);
+                        }
+                    }
+                }
+            }
 
             IEnumerable<PackageUsage> ParseBasePageSections()
             {
@@ -501,10 +529,11 @@ namespace KontomanagerClient
         public async Task<bool> CreateConnection()
         {
             await AcceptCookies();
-            var loginSuccess = await CreateConnection(_user, _password);
+            if (!await CreateConnection(_user, _password))
+                return false;
             if (EnableSubscriberIdPreload)
                 await PreloadLinkedSubscriberIds();
-            return loginSuccess;
+            return true;
         }
         
         /// <summary>

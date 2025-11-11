@@ -35,10 +35,6 @@ var usage = await client.GetAccountUsage();
 usage.PrintToConsole();
 ```
 
-### 2.2.0
-- update base uri for yesss
-- change target frameworks to `netstandard2.0;net8.0;net9.0`
-
 ### 2.1.0 Additions
 #### A1 Business
 Some extra units, such as USA minutes, are included in the `AdditionalQuotas` dictionary of `PackageUsage`.
@@ -81,6 +77,19 @@ The following projects seem to do the same thing as this client in other languag
 - Python Client [https://git.flo.cx/flowolf/yessssms](https://git.flo.cx/flowolf/yessssms)
 
 # Changelog
+
+### 2.2.3
+- fix exception in `CreateConnection` when wrong credentials were provided
+
+### 2.2.2
+- handle new simple/expert mode selection in Kontomanager
+
+### 2.2.1
+- handle new phone number selection dropdown structure in Kontomanager
+
+### 2.2.0
+- update base uri for yesss
+- change target frameworks to `netstandard2.0;net8.0;net9.0`
 
 ### 04.04.2024 2.1.4
 - set culture for parsing numbers to de-DE. This fixes the problem where used data was read incorrectly if the system locale is not de-DE.
