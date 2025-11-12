@@ -78,6 +78,9 @@ The following projects seem to do the same thing as this client in other languag
 
 # Changelog
 
+### 2.2.4
+- fix exception in `A1BusinessClient.ParseUnitsValidityPeriod` caused by MobilPoints ad
+
 ### 2.2.3
 - fix exception in `CreateConnection` when wrong credentials were provided
 

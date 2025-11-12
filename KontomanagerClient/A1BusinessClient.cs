@@ -379,16 +379,31 @@ namespace KontomanagerClient
         /// <returns></returns>
         private (DateTime? unitsStart, DateTime? unitsEnd) ParseUnitsValidityPeriod(string containerHtml)
         {
-            var range = containerHtml.Split(new [] { "<br>" }, StringSplitOptions.None).Last().Trim();
-            var parts = range.Split(new [] { "bis" }, StringSplitOptions.None);
-            var start = parts[0].Trim();
-            var end = parts[1].Trim();
-            var startDay = int.Parse(start.Split('.').First());
-            var endDay = int.Parse(end.Split('.').First());
-            var today = DateTime.Today;
-            DateTime? unitsStart = today.Day >= startDay ? new DateTime(today.Year, today.Month, startDay) : new DateTime(today.AddMonths(-1).Year, today.AddMonths(-1).Month, startDay);
-            DateTime? unitsEnd = today.Day <= endDay ? new DateTime(today.Year, today.Month, endDay) : new DateTime(today.AddMonths(1).Year, today.AddMonths(1).Month, endDay);
-            return (unitsStart, unitsEnd);
+            try
+            {
+                // filter out ads
+                if (!containerHtml.Contains(" bis "))
+                    return (null, null);
+                var range = containerHtml.Split(new[] { "<br>" }, StringSplitOptions.None).Last().Trim();
+                var parts = range.Split(new[] { "bis" }, StringSplitOptions.None);
+                var start = parts[0].Trim();
+                var end = parts[1].Trim();
+                var startDay = int.Parse(start.Split('.').First());
+                var endDay = int.Parse(end.Split('.').First());
+                var today = DateTime.Today;
+                DateTime? unitsStart = today.Day >= startDay
+                    ? new DateTime(today.Year, today.Month, startDay)
+                    : new DateTime(today.AddMonths(-1).Year, today.AddMonths(-1).Month, startDay);
+                DateTime? unitsEnd = today.Day <= endDay
+                    ? new DateTime(today.Year, today.Month, endDay)
+                    : new DateTime(today.AddMonths(1).Year, today.AddMonths(1).Month, endDay);
+                return (unitsStart, unitsEnd);
+            }
+            catch (Exception)
+            {
+                // This may occur if A1 decided to change their layout again
+                return (null, null);
+            }
         }
 
         public void Dispose()
