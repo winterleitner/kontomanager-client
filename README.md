@@ -78,6 +78,10 @@ The following projects seem to do the same thing as this client in other languag
 
 # Changelog
 
+### 2.2.5
+- fix bug parsing wrong "Guthaben" when "Bonusguthaben" was awarded by yesss (thank you @crumpfhuber)
+- add .NET 10 build target
+
 ### 2.2.4
 - fix exception in `A1BusinessClient.ParseUnitsValidityPeriod` caused by MobilPoints ad
 
