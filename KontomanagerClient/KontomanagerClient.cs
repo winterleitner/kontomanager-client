@@ -434,58 +434,68 @@ namespace KontomanagerClient
                         {
                             foreach (var item in infoItems.Where(i => i.InnerText.Contains(":")))
                             {
-                                var infoTitle =
-                                    HttpUtility.HtmlDecode(item.InnerText.Split(':').First());
-                                var lowerTitle = infoTitle.ToLower();
-                                var infoValue = HttpUtility.HtmlDecode(item.InnerText.Split(new []{':'}, 2)[1].Trim());
+                                var parts = item.InnerText.Split(new[] { ':' }, 2);
+                                if (parts.Length != 2)
+                                    continue;
+
+                                var infoTitle = HttpUtility.HtmlDecode(parts[0]).Trim();
+                                var lowerTitle = infoTitle.ToLowerInvariant();
+                                var infoValue = HttpUtility.HtmlDecode(parts[1]).Trim();
+
                                 if (lowerTitle.Contains("datenvolumen") && lowerTitle.Contains("eu"))
                                 {
                                     try
                                     {
                                         var match = Regex.Match(infoValue, @"(\d|.*) MB von (\d*) MB");
-                                        pu.DataEu.Total =
-                                            int.Parse(match.Groups[2].Value);
-                                        pu.DataEu.CorrectRemainingFree((int)Math.Round(decimal.Parse(match.Groups[1].Value, NumberStyles.Any,
-                                            new CultureInfo("en-EN"))));
+                                        pu.DataEu.Total = int.Parse(match.Groups[2].Value);
+                                        pu.DataEu.CorrectRemainingFree((int)Math.Round(
+                                            decimal.Parse(match.Groups[1].Value, NumberStyles.Any, new CultureInfo("en-EN"))));
                                     }
-                                    catch { }
+                                    catch
+                                    {
+                                    }
                                 }
                                 else if (lowerTitle.Contains("gültigkeit") && lowerTitle.Contains("sim"))
                                 {
                                     result.Prepaid = true;
-                                    result.SimCardValidUntil =
-                                        DateTime.ParseExact(infoValue, "dd.MM.yyyy",
-                                            null);
+                                    result.SimCardValidUntil = DateTime.ParseExact(infoValue, "dd.MM.yyyy", null);
                                 }
                                 else if (lowerTitle.Contains("letzte aufladung"))
                                 {
-                                    result.LastRecharge = DateTime.ParseExact(infoValue,
-                                        "dd.MM.yyyy", null);
+                                    result.LastRecharge = DateTime.ParseExact(infoValue, "dd.MM.yyyy", null);
                                 }
-                                else if (lowerTitle.Contains("guthaben"))
+                                else if (lowerTitle.Contains("standardguthaben"))
                                 {
-                                    var m = Regex.Match(item.InnerText, @"guthaben: EUR (\d*,?\d*)");
-                                    if (m.Groups.Count == 2)
+                                    var parsedCredit = TryParseEuroValue(infoValue);
+                                    if (parsedCredit.HasValue)
                                     {
-                                        result.Credit = decimal.Parse(m.Groups[1].Value, NumberStyles.Any, new CultureInfo("de-DE"));
+                                        result.Credit = parsedCredit.Value;
                                     }
                                 }
-                                else if (lowerTitle.Contains("gültig von") ||
-                                         lowerTitle.Contains("aktivierung des paket"))
+                                else if (lowerTitle == "guthaben" || lowerTitle.EndsWith(" guthaben"))
                                 {
-                                    pu.UnitsValidFrom = DateTime.ParseExact(infoValue,
-                                        "dd.MM.yyyy HH:mm", null);
+                                    // Fallback für Ansichten ohne "Standardguthaben"
+                                    // Wichtig: Bonusguthaben wird hier bewusst NICHT gematcht
+                                    if (!lowerTitle.Contains("bonusguthaben"))
+                                    {
+                                        var parsedCredit = TryParseEuroValue(infoValue);
+                                        if (parsedCredit.HasValue)
+                                        {
+                                            result.Credit = parsedCredit.Value;
+                                        }
+                                    }
                                 }
-                                else if (lowerTitle.Contains("gültig bis") ||
-                                         lowerTitle.Contains("gültigkeit des paket"))
+                                else if (lowerTitle.Contains("gültig von") || lowerTitle.Contains("aktivierung des paket"))
                                 {
-                                    pu.UnitsValidUntil = DateTime.ParseExact(infoValue,
-                                        "dd.MM.yyyy HH:mm", null);
+                                    pu.UnitsValidFrom = DateTime.ParseExact(infoValue, "dd.MM.yyyy HH:mm", null);
+                                }
+                                else if (lowerTitle.Contains("gültig bis") || lowerTitle.Contains("gültigkeit des paket"))
+                                {
+                                    pu.UnitsValidUntil = DateTime.ParseExact(infoValue, "dd.MM.yyyy HH:mm", null);
                                 }
                                 else
                                 {
-                                    pu.AdditionalInformation[infoTitle] =
-                                        HttpUtility.HtmlDecode(infoValue);
+                                    pu.AdditionalInformation[infoTitle] = infoValue;
                                 }
                             }
                         }
@@ -503,6 +513,24 @@ namespace KontomanagerClient
             result.PackageUsages = sections.ToList();
             return result;
             // TODO: parse base page
+        }
+
+        private static decimal? TryParseEuroValue(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+
+            var match = Regex.Match(input, @"EUR\s*([0-9]+(?:[.,][0-9]+)?)", RegexOptions.IgnoreCase);
+            if (!match.Success)
+                return null;
+
+            if (decimal.TryParse(match.Groups[1].Value, NumberStyles.Any, new CultureInfo("de-DE"), out var value))
+                return value;
+
+            if (decimal.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                return value;
+
+            return null;
         }
 
         public async Task<AccountUsage> GetAccountUsage(PhoneNumber number)
