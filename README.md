@@ -78,6 +78,13 @@ The following projects seem to do the same thing as this client in other languag
 
 # Changelog
 
+### 2.3.0
+- fix bug parsing the selected phone number in updated kontomanager UI (thank you @crumpfhuber)
+- change default parsing of the phone number to the 436811234567 format, even if it is displayed as 0681/1234567 in some places.
+- Change the `PhoneNumber` constructor to accept the phonenumber as an argument instead of assigning the property.
+- add `PhoneNumber.RawNumber` property that contains the phone number in the format it is displayed in the kontomanager interface (e.g. 0681/1234567)
+- add `PhoneNumber.GetFormattedNumber` method that returns the phone number in a specified format (e.g. with or without country code, with or without separator, ...)
+
 ### 2.2.5
 - fix bug parsing wrong "Guthaben" when "Bonusguthaben" was awarded by yesss (thank you @crumpfhuber)
 - add .NET 10 build target

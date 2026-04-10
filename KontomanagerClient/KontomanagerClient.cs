@@ -113,7 +113,7 @@ namespace KontomanagerClient
             string number = ExtractSelectedPhoneNumberFromSettingsPage(responseHtml);
 
             if (number is null) throw new Exception("Phone number could not be found");
-            return number;
+            return PhoneNumber.NormalizePhoneNumber(number);
         }
 
         private string ExtractSelectedPhoneNumberFromSettingsPage(string settingsPageHtml)
@@ -156,7 +156,8 @@ namespace KontomanagerClient
                     if (string.IsNullOrWhiteSpace(text))
                         continue;
         
-                    if (text.Contains("Rufnummer", StringComparison.OrdinalIgnoreCase))
+                    // IndexOf works in .NETStandard 2.0 with OrdinalIgnoreCase, while Contains does not have this overload for StringComparison
+                    if (text.IndexOf("Rufnummer", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         var number = ExtractPhoneNumber(text);
                         if (!string.IsNullOrWhiteSpace(number))
@@ -212,9 +213,9 @@ namespace KontomanagerClient
             }
             var isSelected = GetPreviousActualSibling(liNode)?.InnerText.ToLower().Contains("aktuell gewählte rufnummer")??false;
 
-            return new PhoneNumber()
+            return new PhoneNumber(number)
             {
-                Name = name, SubscriberId = subscriberId, Number = number,
+                Name = name, SubscriberId = subscriberId,
                 Selected = isSelected
             };
         }

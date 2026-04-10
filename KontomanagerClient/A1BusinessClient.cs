@@ -205,10 +205,9 @@ namespace KontomanagerClient
                 var number = contractItem.SelectSingleNode(".//strong[@class='product-title']");
                 var contractName = contractItem.SelectSingleNode(".//span[@class='pi-modify-name']");
                 var detailsButton = contractItem.SelectSingleNode(".//a[@role='button']");
-                var phoneNumber = new PhoneNumber
+                var phoneNumber = new PhoneNumber(number.InnerText)
                 {
                     Name = contractName.InnerText,
-                    Number = number.InnerText,
                     SubscriberId = detailsButton.GetAttributeValue("href", null)?.Split('=').Last()
                 };
                 numbers.Add(phoneNumber);
