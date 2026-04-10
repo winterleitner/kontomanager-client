@@ -118,20 +118,74 @@ namespace KontomanagerClient
 
         private string ExtractSelectedPhoneNumberFromSettingsPage(string settingsPageHtml)
         {
+            if (string.IsNullOrWhiteSpace(settingsPageHtml))
+                return null;
+        
             var doc = new HtmlDocument();
             doc.LoadHtml(settingsPageHtml);
-
-            foreach (var row in doc.DocumentNode.SelectNodes("//li[@class='list-group-item']"))
+        
+            // 1) New YESSS layout:
+            //    The phone number is in the header dropdown:
+            //    <button id="user-dropdown"><span>0681/20323724</span></button>
+            var dropdownSpan = doc.DocumentNode.SelectSingleNode("//button[@id='user-dropdown']//span");
+            if (dropdownSpan != null)
             {
-                if (row.HasClass("list-group-header")) continue;
-                var d = row.SelectSingleNode("./div");
-                var sides = d.SelectNodes("./div");
-                if (sides.Count < 2 ||
-                    !sides[0].InnerText.StartsWith("Rufnummer")) continue;
-                return sides.Last().InnerText;
+                var text = HtmlEntity.DeEntitize(dropdownSpan.InnerText)?.Trim();
+                var number = ExtractPhoneNumber(text);
+                if (!string.IsNullOrWhiteSpace(number))
+                    return number;
             }
-
+        
+            // 2) Fallback: Read text directly from the button
+            var dropdownButton = doc.DocumentNode.SelectSingleNode("//button[@id='user-dropdown']");
+            if (dropdownButton != null)
+            {
+                var text = HtmlEntity.DeEntitize(dropdownButton.InnerText)?.Trim();
+                var number = ExtractPhoneNumber(text);
+                if (!string.IsNullOrWhiteSpace(number))
+                    return number;
+            }
+        
+            // 3) Old approach via list-group-item / "phone number"
+            var infoItems = doc.DocumentNode.SelectNodes("//li[contains(@class,'list-group-item')]");
+            if (infoItems != null)
+            {
+                foreach (var item in infoItems)
+                {
+                    var text = HtmlEntity.DeEntitize(item.InnerText)?.Trim();
+                    if (string.IsNullOrWhiteSpace(text))
+                        continue;
+        
+                    if (text.Contains("Rufnummer", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var number = ExtractPhoneNumber(text);
+                        if (!string.IsNullOrWhiteSpace(number))
+                            return number;
+                    }
+                }
+            }
+        
+            // 4) Last resort: search the entire page for an Austrian number.
+            var pageText = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText ?? string.Empty);
+            var fallbackNumber = ExtractPhoneNumber(pageText);
+            if (!string.IsNullOrWhiteSpace(fallbackNumber))
+                return fallbackNumber;
+        
             return null;
+        }
+
+        private string ExtractPhoneNumber(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+        
+            // Examples:
+            // 0681/20323724    068120323724    +4368120323724    4368120323724
+            var match = Regex.Match(text, @"(\+?43|0)[0-9/\s\-]{6,}");
+            if (!match.Success)
+                return null;
+        
+            return match.Value.Trim();
         }
         
         private PhoneNumber ExtractPhoneNumberFromDropdown(HtmlNode liNode)
