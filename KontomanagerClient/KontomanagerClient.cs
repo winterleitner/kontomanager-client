@@ -263,7 +263,7 @@ namespace KontomanagerClient
             }
 
             //other numbers
-            var an = dd.ChildNodes.FirstOrDefault(n => n.InnerText.ToLower().Contains("rufnummer wechseln"));
+            var an = dd.ChildNodes.FirstOrDefault(n => n.InnerText.ToLower().Contains("meine gruppe"));
             if (an is null) return res;
             foreach (var otherNumberNode in an.SelectSingleNode(".//ul").SelectNodes(".//li"))
             {

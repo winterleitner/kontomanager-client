@@ -78,6 +78,9 @@ The following projects seem to do the same thing as this client in other languag
 
 # Changelog
 
+### 2.3.1
+- fix selection of other phone numbers (element was relabelled in kontomanager)
+
 ### 2.3.0
 - fix bug parsing the selected phone number in updated kontomanager UI (thank you @crumpfhuber)
 - change default parsing of the phone number to the 436811234567 format, even if it is displayed as 0681/1234567 in some places.
