@@ -431,6 +431,27 @@ namespace KontomanagerClient
                                         ? int.MaxValue
                                         : int.Parse(totText);
                                     q.Used = int.Parse(match.Groups[1].Value);
+                                    
+                                    // Validate by checking Verfügbar
+                                    match = Regex.Match(available.InnerText, @"Verfügbar: ([\d–-]+)");
+                                    var dataAvailable = 0;
+
+                                    if (match.Success)
+                                    {
+                                        string rawValue = match.Groups[1].Value;
+    
+                                        // Check for dash variants or parse normally
+                                        if (rawValue == "–" || rawValue == "-")
+                                        {
+                                            dataAvailable = 0;
+                                        }
+                                        else
+                                        {
+                                            int.TryParse(rawValue, out dataAvailable);
+                                        }
+                                    }
+                                    if (q.RemainingFree != dataAvailable)
+                                        q.CorrectRemainingFree(dataAvailable);
                                 }
                             }
                             else if (headingLowered.Contains("minuten") && !headingLowered.Contains("eu"))
@@ -548,6 +569,8 @@ namespace KontomanagerClient
                                 {
                                     pu.UnitsValidUntil = DateTime.ParseExact(infoValue, "dd.MM.yyyy HH:mm", null);
                                 }
+                                else if (lowerTitle.Contains("automatische verlängerung") && infoValue.ToLower().Contains("inaktiv"))
+                                    pu.RenewingFailed = true;
                                 else
                                 {
                                     pu.AdditionalInformation[infoTitle] = infoValue;

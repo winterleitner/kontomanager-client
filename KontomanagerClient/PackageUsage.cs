@@ -7,8 +7,13 @@ namespace KontomanagerClient
     {
         public string PackageName { get; set; }
         
-        public DateTime UnitsValidFrom { get; set; }
-        public DateTime UnitsValidUntil { get; set; }
+        public DateTime? UnitsValidFrom { get; set; }
+        public DateTime? UnitsValidUntil { get; set; }
+        
+        /// <summary>
+        /// True if the package could not be renewed, usually because of insufficient credit.
+        /// </summary>
+        public bool RenewingFailed { get; set; }
 
         public UnitQuota Minutes { get; set; } = new UnitQuota();
         public UnitQuota Sms { get; set; } = new UnitQuota();

@@ -78,6 +78,10 @@ The following projects seem to do the same thing as this client in other languag
 
 # Changelog
 
+### 2.4.0
+- add support for detecting that a kontomanager package could not be renewed due to insufficient funds (`PackageUsage.RenewingFailed`)
+- make `PackageUsage.UnitsValidFrom` and `PackageUsage.UnitsValidUntil` nullable
+
 ### 2.3.1
 - fix selection of other phone numbers (element was relabelled in kontomanager)
 
